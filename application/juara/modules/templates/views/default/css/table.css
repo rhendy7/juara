@@ -1,0 +1,36 @@
+/* project: Sistem Informasi Perpustakaan DIV ALKS
+   author: Muhammad (Allahuma Sholi alamuhammad) */
+/*CSS Connect ==================================================*/
+
+
+
+
+
+
+
+
+
+/* General =====================================================*/
+   
+/* default styles
+   -------------- */
+   
+
+
+/* General table class start */
+
+
+
+thead tr {
+	background: #99a5fe;
+
+
+}
+
+
+table, tr, td,th {
+	border: 1px solid #b8b8ba;
+
+
+
+}

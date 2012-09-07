@@ -1,0 +1,139 @@
+/*  
+Theme Name: Leigeber
+Description: A two-column fixed-width theme custom designed by Michael Leigeber.
+Version: 3.0
+Author: Michael Leigeber
+Author URI: http://www.leigeber.com
+*/
+
+/* Global */
+
+* {margin:0; padding:0; outline:0}
+body {font:13px Verdana,Arial; min-width:990px; color:#111; background:#d6dadb url(../images/bg000000.jpg) fixed; margin: 0;}
+img {border:0}
+h1 {float:left; clear:left; margin-top:25px; font:24px Georgia,Verdana; color:#fff; width:820px; text-shadow:#2c3834 1px 1px}
+h2 {font:22px Georgia,Verdana; color:#465236; text-shadow:#fff 1px 1px}
+a {text-decoration:none; color:#455e5d}
+a:hover {color:#000}
+#outer {background:url(../images/top-bg00.jpg) repeat-x}
+#center {width:990px; margin:0 auto}
+
+/* Header */
+
+#header {height:153px}
+#logo {float:left; margin-top:5px}
+#topnav {float:right; text-shadow:#7e9a58 1px 1px; margin-top:4px; margin: 0;}
+#header ul {float:right; margin: 0;padding: 0px 10px 5px 10px; list-style:none; height: 35px; color:#ffffff;  border-radius:5px;
+ -moz-border-radius:5px; }
+#header li {float:left;  background: #324147; margin: 10px 10px 0 0; margin: 5px 0 0px 5px;  padding: 5px; border: 1px solid #3b474e; border-radius:5px;
+ -moz-border-radius:5px; }
+#header li a {display:block; padding:8px 14px 12px 16px; color:#e6eed9}
+#header li a:hover {color:#fff}
+#home {background:url(../images/top-arro.gif) 50% 100% no-repeat}
+#search {float:right; clear:both; margin-top:22px}
+#search input {width:225px; border:0; border-left:1px solid #99af7f; height: 30px;border-top:1px solid #99af7f; border-right:1px solid #bbcca4; border-bottom:1px solid #bbcca4; padding:4px; color:#999}
+#icons {float:right; width:104px; margin-top:44px}
+#icons a {float:left; margin-left:12px}
+
+/* Left Column */
+
+#content {float:left; width:990px; padding-bottom:50px;  background: #fff; border-radius:5px; -moz-border-radius:5px; }
+#right {float:left; width:730px; padding: 10px 5px 0 10px;}
+.post {margin-bottom:30px; padding-bottom:35px}
+.post p, .innerpost p {line-height:1.5; margin-bottom:16px}
+.date {float:left; background:url(../images/http://cdn.scriptiny.com/static/v3/date-bg.gif); width:42px; height:36px; padding:5px 0 0 1px; font-size:12px; text-align:center; line-height:1.2; color:#465236; text-shadow:#eff3e8 1px 1px}
+.info {float:left; margin-left:10px}
+.posted {color:#5f7f7d; font-style:italic; font-size:12px}
+.posted a {text-decoration:underline; color:#5f7f7d}
+.posted a:hover {color:#364d4c}
+.text {clear:left; padding:20px 0 5px; overflow:hidden}
+.posttext {padding-bottom:5px}
+.posttext ul, .post ul {margin:0 0 16px 15px}
+.posttext li, .post li {margin-bottom:3px; line-height:1.5}
+.posttext h3, .text h3 {font:18px Georgia,Verdana; margin-bottom:14px}
+.post ol {margin:0 0 11px 20px}
+.post ol li {margin-bottom:3px}
+.details {background:url(../images/details-.gif) no-repeat; height:24px; padding:7px 14px 0 12px; font-size:12px; color:#465236; text-shadow:#ecf1e5 1px 1px}
+.responses {float:left}
+.postlink {float:right; padding-right:12px; background:url(../images/http://cdn.scriptiny.com/static/v3/details-arrow.gif) 100% 5px no-repeat; font-style:italic}
+.postnav {height:20px; text-shadow:#fff 1px 1px}
+.alignleft {float:left}
+.alignright {float:right}
+
+
+
+/* Left Column */
+
+#left {float:left; width:210px; margin-right: 10px; padding: 10px 5px 0 10px;}
+#left_menu {float:right; width:210px; margin:0 0 12px 7px; border: 2px solid #c6d9fe; border-radius:5px; -moz-border-radius:5px;}
+#left_menu h3 {display:block; font:16px Georgia,Verdana; margin: 0 !important;color:#fff; background:url(../images/header-b.gif); padding:6px 0 8px 13px; margin-bottom:6px; text-shadow:#899a82 1px 1px; font-size: 14px;  border-radius:5px; -moz-border-radius:5px;}
+#left_menu_content { padding-left: 8px; }
+#left_menu ul {float:left; list-style:none;  text-shadow:#fff 1px 1px}
+#left_menu li {margin-top:5px; font-style:italic; color:#888}
+#left_menu li a {font-style:normal}
+#recentposts {float:right; width:340px; margin:0 0 0 7px}
+#recentposts ul {list-style:none}
+#recentposts li {border-bottom:1px solid #fff}
+#recentposts h3 {display:block; font:16px Georgia,Verdana; color:#fff; background:url(../images/header-b.gif); padding:6px 0 8px 13px; margin-bottom:6px; text-shadow:#899a82 1px 1px}
+#recentposts a {display:block; border-bottom:1px solid #d9d9d9; font-size:12px; padding:5px 15px 6px 0; text-shadow:#fff 1px 1px}
+a#archive {border:0; padding:8px 0 12px; margin-top:0; font-style:italic; text-align:center; text-shadow:#fff 1px 1px}
+.marginright {padding:0 18px 0 0}
+
+li#lastlink {border:none; margin:none}
+#otherlinks {padding:8px 0 11px; background:#e9eced; font-style:italic; text-align:center}
+#textlinks {float:right; width:340px; margin-left:7px}
+.oddrow {background:#eee}
+
+/* Footer */
+
+#footer {height:50px; clear:left; background:url(../images/footer-b.jpg) repeat-x; text-shadow:#7e9a58 1px 1px}
+#footercenter {width:990px; height:33px; margin:0 auto; color:#e6eed9; padding-top:17px}
+#copyright {float:left}
+#footerlinks {float:right}
+#footerlinks a {color:#e6eed9}
+#footerlinks a:hover {color:#fff}
+
+/* Contact */
+
+.contactform {margin-top:20px}
+.contactform input {border:1px solid #aaa; width:200px; background:#fbfbfb; margin-top:4px; padding:2px; font-size:12px}
+.contactform textarea {border:1px solid #aaa; width:586px; padding:2px; background:#fbfbfb; height:100px; margin-top:4px; font:12px Verdana,Arial}
+.contactform .submit {width:125px; padding:2px 0; font-size:13px; cursor:pointer}
+.contactform .submit:hover {background:#e8e8e8}
+
+/* Links */
+
+#linkdir {list-style:none}
+#linkdir h2 {padding-bottom:10px; font-size:14px; font-weight:bold}
+#linkdir ul {list-style:none; padding-bottom:12px}
+#linkdir .linkcat li {padding-bottom:5px; margin-bottom:5px; border-bottom:1px solid #ccc}
+
+/* Archives */
+
+.archives {padding:10px 0 20px 15px}
+
+
+
+/* Navigation top */
+#nav {height:30px; background:url(../images/nav_bg.gif);  color:#1f2b32; text-shadow:1px 1px #888; z-index:1000;  border-radius:5px;
+ -moz-border-radius:5px; border: 1px solid #c6d9fe; /* Firefox 3.6 and earlier */}
+#menu a {float:left; color:#1f2b32; text-decoration:none; width:120px; height:28px; padding-top:8px}
+#menu span {float:left; color:#1f2b32; text-decoration:none; width:120px; height:28px; padding-top:8px}
+#menu a:hover {color:#fff}
+#menu {list-style:none; font:16px Arial,Verdana; text-align:center; width:600px; margin:0 auto}
+#menu li {position:relative; margin-left: 0;float:left; width:120px; z-index:1000; }
+#menu ul {display:none;margin-left:0; position:absolute; font:normal 13px Arial,Verdana; top:30px; left:0; background:#9DABFC; text-align: left; display:none; list-style:none}
+#menu ul li {float:none; border-top:1px solid #ccc; width:160px; }
+#menu ul li a, li#menuhover li a, li#menuhover li#menuhover li a {float:none; display:block; background:none; height:22px; padding: 12px 8px 0 10px;}
+#menu ul li a:hover, li#menuhover li a:hover, li#menuhover li#menuhover li a:hover {background:#999; color:#fff}
+#menu ul li span, li#menuhover li span, li#menuhover li#menuhover li span {float:none; display:block; background:none; height:22px; padding-top:5px}
+#menu ul ul {left:120px; top:0}
+#menu li.submenu {font-weight:bold}
+#menu li.noborder {border-top:none}
+li#menuhover a, li#menuhover li#menuhover a {color:#fff; background:#999}
+li#menuhover span, li#menuhover li#menuhover span {color:#fff; background:#999}
+#menu_info {width:180px; background:#eee}
+#menu_info li {width:160px; border-top:none; padding:8px 10px; color:#666; text-shadow:1px 1px #fff; text-align:left}
+#menu li a:hover: { background; blue; }
+#li_space { height: 10px; background:url(../images/top-bg00.jpg) repeat-x; border-bottom: none;}
+#main_li a:hover {border-radius:5px; -moz-border-radius:5px; background:url(../images/top-bg00.jpg) repeat-x; }

@@ -1,0 +1,72 @@
+
+.post {
+	
+	font-size: 14px;
+}
+
+.post .title {
+}
+
+.post .title a {
+	text-decoration: none;
+	color: #37404C;
+}
+
+.post .title a:hover {
+	text-decoration: underline;
+}
+
+.post .entry {
+}
+
+.post .meta {
+	height: 16px;
+	margin: 0;
+	padding: 10px;
+	background: url(images/img07.jpg) repeat-x left bottom;
+	line-height: normal;
+}
+
+.post .meta .posted {
+	display: block;
+	float: left;
+}
+
+.post .meta .permalink {
+	display: block;
+	float: right;
+	padding-left: 17px;
+	background: url(images/img09.gif) no-repeat left center;
+}
+
+.post .meta .comments {
+	display: block;
+	float: right;
+	padding: 0 30px 0 19px;
+	background: url(images/img08.gif) no-repeat left center;
+}
+
+/*....... end blog post style */
+
+
+/*other style */
+
+#float_right {
+	float: right;
+
+}
+
+.entry li {
+
+	list-style:  none;
+	background: url(../images/list.png) 1px 8px no-repeat;
+	padding-left: 13px;
+
+}
+
+ul{
+	margin-top: 5px ;
+	padding-left: 10px;
+
+	
+	}	
