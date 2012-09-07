@@ -6,7 +6,8 @@ class Pengelola_web_sekolah extends MX_Controller {
 	private $t;
 	private $_template;
 	private $M_admin;
-
+	private $email;
+	
 	function __construct()
 	{
 		parent::__construct();
@@ -17,7 +18,7 @@ class Pengelola_web_sekolah extends MX_Controller {
 		$this->t  	= $this->config->item('template');
 		$this->_template		= "templates/$this->t/";
 		
-		
+		$this->email = $this->session->userdata('email');
 		
 		
 		
@@ -32,6 +33,10 @@ class Pengelola_web_sekolah extends MX_Controller {
 		
 		
 	}
+	
+	
+	
+	
 
 	function login_pertama()
 	{
@@ -56,6 +61,74 @@ class Pengelola_web_sekolah extends MX_Controller {
 	
 	}
 	
+	
+	
+	function form_kordinat()
+	{
+		//mapping
+		 //latitude
+			$this->form_validation->set_rules('lat_degrees','Latitude Degrees','required|is_natural|less_than[91]');	
+			$this->form_validation->set_rules('lat_minutes','Latitude Minutes','required|is_natural|less_than[60]');
+			$this->form_validation->set_rules('lat_second','Latitude Second','required|is_natural|less_than[60]');	
+			$this->form_validation->set_rules('radio_latitude','North/South Radio','required');	
+			
+		//longitude
+			$this->form_validation->set_rules('long_degrees','longitude Degrees','required|is_natural|less_than[181]');	
+			$this->form_validation->set_rules('long_minutes','longitude Minutes','required|is_natural|less_than[60]');
+			$this->form_validation->set_rules('long_second','longitude Second','required|is_natural|less_than[60]');	
+			$this->form_validation->set_rules('radio_longitude','West/East Radio','required');	
+	
+		if ($this->form_validation->run() == TRUE) // validation has been passed
+		{
+	
+			$latitude = ''.$this->input->post('lat_degrees').'-'.$this->input->post('lat_minutes').'-'.$this->input->post('lat_second').'-'.$this->input->post('radio_latitude').'';
+			
+			$longitude = ''.$this->input->post('long_degrees').'-'.$this->input->post('long_minutes').'-'.$this->input->post('long_second').'-'.$this->input->post('radio_longitude').'';
+			
+			
+			
+			// build array for the model
+			$form_data = array(
+							'sekolah_id' => $this->input->post('sekolah_id'),
+												
+							//latitude vs langitude
+							'latitude' => $latitude,
+							'longitude' => $longitude,
+												
+
+						);
+		
+			//buat akun dan update_profile_sekolah
+			// if($this->M_admin->update_profile_sekolah($id_sekolah,$form_data) == TRUE)
+			// {
+				// echo " insert me";
+			
+			
+			// }
+			
+		}
+		else {
+		
+			
+			$data['pengguna'] = $this->M_user->get_user_by_email($this->email);
+			$data['sekolah'] = $this->M_user->get_sekolah_by_id($data['pengguna']->sekolah_id);
+			
+			
+			$this->template->set('sekolah', $data['sekolah']->nama);
+			$this->template->set('title', 'Form profil sekolah');
+			$this->template->load($this->_template.'one_col', 'V_form_kordinat', $data);
+			
+		
+		
+		}
+	
+	
+	
+	
+	
+	}
+	
+	
 	//without warning
 	function form_profil_sekolah1()
 	{
@@ -71,6 +144,11 @@ class Pengelola_web_sekolah extends MX_Controller {
 		 $this->template->set('sekolah', $nama_sekolah);
 		$this->template->set('title', 'Form profil sekolah');
 		$this->template->load($this->_template.'one_col', 'V_form_profil_sekolah', $data);
+	
+	
+	
+	
+	
 	
 	
 	}

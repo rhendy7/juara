@@ -25,7 +25,7 @@
 						</br>Untuk memulai silahkan klik tombol Mulai...					
 					</div>
 					
-					<div id = "float_right"> <?php echo anchor('pengelola_web_sekolah/form_profil_sekolah1', 'Mulai', 'class ="button medium green"'); ?> </div>
+					<div id = "float_right"> <?php echo anchor('pengelola_web_sekolah/form_kordinat', 'Mulai', 'class ="button medium green"'); ?> </div>
 					
 </div>
 
