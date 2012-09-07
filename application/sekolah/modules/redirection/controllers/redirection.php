@@ -14,7 +14,7 @@
 
 
 
-class Redirection extends CI_Controller
+class Redirection extends MX_Controller
 {
 	
 	
@@ -55,6 +55,18 @@ class Redirection extends CI_Controller
 	
 	
 	}
+	
+	
+	function clear_session()
+	{
+		$this->session->sess_destroy();
+		$base_url  = $this->config->item('base_url');
+
+		redirect($base_url.'dinas.php/auth/login');
+	
+	
+	}
+	
 	
 	
 	function form_daftar_ulang() 

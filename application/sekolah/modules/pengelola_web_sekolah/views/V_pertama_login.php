@@ -11,12 +11,14 @@
 					<h2 class="title"><a href="#">Selamat Login Pertama Kali Pengelola Sekolah :)</a></h2>
 					<div class="entry">
 					
-						Hi, <strong>hello</strong>!, Selamat Datang <?php $pengelola = $this->M_g_admin->get_pengelola_sekolah($id_sekolah); echo $pengelola->nama; ?>
-						</br>anda sekarang ada di Halaman awal Websekolah <strong> <?php  $sekolah = $this->M_g_admin->get_sekolah_where_id($id_sekolah); echo "$sekolah->kode_tingkat_sekolah ";  echo ucfirst($sekolah->nama); ?></strong>
-						</br>Setelah ini anda akan dipandu untuk mengisi kelengkapan data profil sekolah.  Beberapa data yang diperlukan untuk diisi pada halaman berikut ini diantaranya :
+						Hi, <strong>hello</strong>!, Selamat Datang
+						</br> Anda saat ini login sebagai <b><?php echo $pengguna->nama; ?></b> dan dengan email <b><?php echo $pengguna->email;?></b> 
+						</br>Apakah anda yakin data diatas data anda ? <?php echo anchor('redirection/clear_session','Ini bukan nama dan email saya !') ?>
+						</br>anda sekarang ada di Halaman awal Websekolah <strong> <?php  ?></strong>
+						</br>Setelah ini anda akan dipandu untuk memastikan profil sekolah anda dan mengisi lokasi sekolah anda :
 						<ol>
-							<li> Data Utama Profil Sekolah </li>
-							<li> Data profil anda sebagai pengelola sekolah </li>
+							<li> Pastikan anda adalah sebagai pengelola yang BENAR sesuai dengan sekolah anda </li>
+							<li> Mohon siapkan data kordinat sekolah anda </li>
 						
 						</ol>
 						Setelah proses pengisian telah anda selesaikan, maka anda akan dapat menggunakan Websekolah <strong>Juara</strong> Anda.

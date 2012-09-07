@@ -16,17 +16,13 @@ class Pengelola_web_sekolah extends MX_Controller {
 		$ci =& get_instance();
 		$this->t  	= $this->config->item('template');
 		$this->_template		= "templates/$this->t/";
-		$this->session->userdata('id_sekolah');
 		
 		
 		
 		
-		$this->load->library('tank_auth');
-		if($this->tank_auth->is_logged_in(FALSE)) {
-			// redirect('auth');
-			echo "not login";
 		
-		}
+		$this->load->library('ion_auth');
+		$this->load->model('M_user');
 		
 		
 		//autoload
@@ -42,15 +38,16 @@ class Pengelola_web_sekolah extends MX_Controller {
 		
 		
 		// $this->template->set('sekolah', $this->session->userdata('id_sekolah'));
-		
-		$data['id_sekolah'] = $this->session->userdata('id_unit_kerja');
+		$email = $this->session->userdata('email');
+		$pengguna = $this->M_user->get_user_by_email($email);
 		
 		
 		
 
-		$sekolah = $this->M_admin->get_sekolah_where_id($data['id_sekolah']);
-		$nama_sekolah = "$sekolah->kode_tingkat_sekolah $sekolah->nama";
-		 $this->template->set('sekolah', $nama_sekolah);
+		$data['sekolah'] = $this->M_user->get_sekolah_by_id($pengguna->sekolah_id);
+		$data['pengguna'] = $this->M_user->get_user_by_email($email);
+		
+		 $this->template->set('sekolah', $data['sekolah']->nama);
 		$this->template->set('title', 'Halaman pengelola web sekolah');
 		$this->template->load($this->_template.'one_col', 'V_pertama_login', $data);
 	

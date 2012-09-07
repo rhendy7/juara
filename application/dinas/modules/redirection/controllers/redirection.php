@@ -14,7 +14,7 @@
 
 
 
-class Redirection extends CI_Controller
+class Redirection extends MX_Controller
 {
 	
 	
@@ -28,15 +28,10 @@ class Redirection extends CI_Controller
 	
 	function index()
 	{
-		$role	= $this->session->userdata('role');
+		
 		$base_url  = $this->config->item('base_url');
 
-					if($role == "admin"){	
-						redirect('admin');
-					}
-					elseif($role == "pengelola web sekolah"){	
-						redirect($base_url.'sekolah.php/pengelola_web_sekolah/login_pertama');
-					}
+		redirect($base_url.'sekolah.php/pengelola_web_sekolah/login_pertama');
 					
 	
 	

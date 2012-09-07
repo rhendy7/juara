@@ -50,6 +50,14 @@ class Auth extends MX_Controller {
 		}
 	}
 
+	function tes()
+	{
+	
+		modules::run('redirection'); 
+	
+	}
+	
+	
 	//log the user in
 	function login()
 	{
@@ -91,10 +99,19 @@ class Auth extends MX_Controller {
 				}
 				else 
 				{
+					 $this->session->set_userdata('email', $pengguna->email);
+
+					 modules::run('redirection'); 
+					
+					// $data['sekolah'] = $this->M_user->get_sekolah_by_id($pengguna->sekolah_id);
+					// $data['pengguna'] = $this->M_user->get_user_by_email($this->input->post('identity'));
+					
+					// $data['message'] = "Silahkan periksa sekolah anda";
+					
+					// $this->template->load($this->_template.'login', 'content/V_login_pertama',$data);$this->template->set('title', 'Buat Akun');
 					
 					
-					
-					if ($this->ion_auth->register($username, $password, $email, $additional_data))
+					/* if ($this->ion_auth->register($username, $password, $email, $additional_data))
 					{ 
 						//check to see if we are creating the user
 						//redirect them back to the admin page
@@ -102,7 +119,7 @@ class Auth extends MX_Controller {
 						// redirect("auth", 'refresh');
 						echo "oke create";
 						
-					}
+					} */
 				}
 				//then form masukkan kordinat dilengkapi dengan nama profil sekolah.
 			

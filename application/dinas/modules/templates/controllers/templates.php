@@ -41,6 +41,14 @@ class Templates extends MX_Controller {
 	
 	}
 
+	
+	
+	public function form ()
+	{
+		$this->load->view('default/form');
+	
+	}
+
 
 /* End of file welcome.php */
 /* Location: ./application/controllers/welcome.php */
