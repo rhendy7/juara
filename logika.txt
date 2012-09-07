@@ -1,0 +1,7 @@
+1. cek email di tb_pengguna klo ada maka form buat password baru
+
+2. lalu antarkan ke halaman admin sekolah....
+
+
+
+untuk sementara JANGAN SINKRONIS tb_pengguna apabila ada proses pengupdatean email di desktop appl

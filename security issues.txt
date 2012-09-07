@@ -1,0 +1,3 @@
+web created on 14 Feb 2012
+
+1. coba cek apakah apabila ada user yg bisa masuk dengan memiliki session is_logged_in pdhl cuman memakai auth local
