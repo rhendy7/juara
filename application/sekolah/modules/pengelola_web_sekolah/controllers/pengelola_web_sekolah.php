@@ -106,8 +106,8 @@ class Pengelola_web_sekolah extends MX_Controller {
 				
 				
 				$this->template->set('sekolah', $data['sekolah']->nama);
-				$this->template->set('title', 'Form profil sekolah');
-				$this->template->load($this->_template.'one_col', 'V_lihat_alamat', $data);
+				$this->template->set('title', 'Konfirmasi');
+				$this->template->load($this->_template.'one_col', 'V_konfirmasi', $data);
 			
 			
 			}
@@ -127,6 +127,32 @@ class Pengelola_web_sekolah extends MX_Controller {
 		
 		
 		}
+	
+	
+	
+	
+	
+	}
+	
+	
+	//digunakan untuk mendaftarkan user
+	//data awal user untuk tb_auth_user diambil dari session dan model
+	function daftar_admin_pertama()
+	{
+		$pengguna =  $this->M_user->get_user_by_email($this->email);
+		$sekolah = $this->M_user->get_sekolah_by_id($pengguna->sekolah_id);
+		
+		$username = 'benedmunds';
+		$password = '12345678';
+		$email = 'ben.edmunds@gmail.com';
+		$additional_data = array(
+								'first_name' => 'Ben',
+								'last_name' => 'Edmunds',
+								);								
+		$group = array('1'); // Sets user to admin. No need for array('1', '2') as user is always set to member by default
+
+		$this->ion_auth->register($username, $password, $email, $additional_data, $group);
+	
 	
 	
 	
