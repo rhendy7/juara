@@ -99,12 +99,18 @@ class Pengelola_web_sekolah extends MX_Controller {
 						);
 		
 			//buat akun dan update_profile_sekolah
-			// if($this->M_admin->update_profile_sekolah($id_sekolah,$form_data) == TRUE)
-			// {
-				// echo " insert me";
+			if($this->M_admin->insert_kordinat($form_data,$this->input->post('sekolah_id')) == TRUE)
+			{
+				$data['pengguna'] = $this->M_user->get_user_by_email($this->email);
+				$data['sekolah'] = $this->M_user->get_sekolah_by_id($data['pengguna']->sekolah_id);
+				
+				
+				$this->template->set('sekolah', $data['sekolah']->nama);
+				$this->template->set('title', 'Form profil sekolah');
+				$this->template->load($this->_template.'one_col', 'V_lihat_alamat', $data);
 			
 			
-			// }
+			}
 			
 		}
 		else {

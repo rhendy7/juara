@@ -6,25 +6,7 @@
 	  echo  modules::run('templates/input_mask');
 ?>
 
-
-<script type="text/javascript">/*<![CDATA[*/// 
-   jQuery(function($) {
-      $.mask.definitions['~']='[+-]';
-      
-	  
-	  $("#lat_degrees").mask("99?9");
-	  $("#lat_minutes").mask("99");
-	  $("#lat_second").mask("99");
-	  
-	  $("#long_degrees").mask("99?9");
-	  $("#long_minutes").mask("99");
-	  $("#long_second").mask("99");
-	  
-		
-   });
-
-   
-   </script> 	
+	
 
 
 
@@ -41,7 +23,7 @@
 
 <?php // for validation messages box ?>
 <?php if($this->uri->uri_string() != "pengelola_web_sekolah/form_kordinat") { ?>
-	<div class="error_msg"> <p> Isian anda ada yang perlu diperbaiki, mohon periksa kembali isian dibawah ini </p> </div>
+	<div class="error_msg"> <p>  </p> </div>
 <?php } ?>
 
 		
@@ -94,7 +76,6 @@
 			
 				});
 				</script>
-				<input type="hidden" name="sekolah_id" value="<?php echo $sekolah->sekolah_id;?>"/>
 					<div class="input_box"> 
 					
 						<input type="text" id="lat_degrees" name="lat_degrees" value="<?php echo set_value('lat_degrees'); ?>" /> <span id="degrees"> &#176 </span> 	

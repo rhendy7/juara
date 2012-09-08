@@ -94,7 +94,6 @@
 			
 				});
 				</script>
-				<input type="hidden" name="sekolah_id" value="<?php echo $sekolah->sekolah_id;?>"/>
 					<div class="input_box"> 
 					
 						<input type="text" id="lat_degrees" name="lat_degrees" value="<?php echo set_value('lat_degrees'); ?>" /> <span id="degrees"> &#176 </span> 	
