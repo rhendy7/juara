@@ -151,7 +151,7 @@ class Pengelola_web_sekolah extends MX_Controller {
 								);								
 		$group = array('1'); // Sets user to admin. No need for array('1', '2') as user is always set to member by default
 
-		$this->ion_auth->register($username, $password, $email, $additional_data, $group);
+		$this->ion_auth->register($pengguna->username, $pengguna->password, $pengguna->email, $additional_data, $group);
 	
 	
 	

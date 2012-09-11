@@ -1,44 +1,107 @@
-<ul id="menu" class="menu">
-        <li><a href="#">Home</a></li>
-        <li> <div id="main_li"><a href="#">Sekolah</a></div>
-            <ul>
-				<li id="li_space"></li>
-                <li><?php echo anchor('admin/list_sekolah', 'Lihat List Sekolah', 'title="Lihat List Sekolah"') ?></li>
-                <li><?php echo anchor('admin/tambah_sekolah', 'Tambah Sekolah', 'title="Tambah sekolah baru SD/IBT, SMP/MTSN, SMA/MAN"') ?></li>
-                <li><a href="#">Else</a></li>
-            </ul>
-        </li>
-        <li><span>User</span>
-            <ul>
-                <li><a href="#">Tambah User</a></li>
-                <li><a href="#">Two</a></li>
-                <li><a href="#">Three</a></li>
-                <li class="submenu">
-					<span>No Link</span>
-					<ul>
-                		<a href="#"><li class="noborder">One</li></a>
-                		<li><a href="#">Two</a></li>
-                		<li><a href="#">Three</a></li>
-                		<li><a href="#">Four</a></li>
-                		<li><a href="#">Five</a></li>
-					</ul>
-				</li>
-                <li><a href="#">Five</a></li>
-                <li><a href="#">Six</a></li>
-            </ul>
-        </li>
-        <li><a href="#">Three</a>
-            <ul>
-                <li><a href="#">One</a></li>
-                <li><a href="#">Two</a></li>
-                <li><a href="#">Three</a></li>
-            </ul>
-        </li>
-        <li><a href="#">Four</a>
-            <ul id="menu_info">
-				<li>
-                	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce justo nulla, malesuada in porta vitae, fermentum ac nulla.</p>
-				</li>
-            </ul>
-        </li>
-    </ul>
+ <div id="top_menu" class="clearfix">
+	    	<ul class="sf-menu"> <!-- DROPDOWN MENU -->
+			<li class="current">
+				<a href="#a">Settings</a><!-- First level MENU -->
+				<ul>
+					<li>
+						<a href="#aa">Database options</a>
+					</li>
+					<li class="current">
+						<a href="#ab">Blog settings</a> <!-- Second level MENU -->
+						<ul>
+							<li class="current"><a href="#">Settings</a></li>
+							<li><a href="#aba">menu item</a></li>
+							<li><a href="#abb">menu item</a></li>
+							<li><a href="#abc">menu item</a></li>
+							<li><a href="#abd">menu item</a></li>
+						</ul>
+					</li>
+					<li>
+						<a href="#">Menu Options</a> <!-- Third level MENU -->
+						<ul>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+						</ul>
+					</li>
+					<li>
+						<a href="#">Editor</a>
+						<ul>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+			<li>
+				<a href="#">Some option</a>
+			</li>
+			<li>
+				<a href="#">Post edit</a>
+				<ul>
+					<li>
+						<a href="#">menu item</a>
+						<ul>
+							<li><a href="#">short</a></li>
+							<li><a href="#">short</a></li>
+							<li><a href="#">short</a></li>
+							<li><a href="#">short</a></li>
+							<li><a href="#">short</a></li>
+						</ul>
+					</li>
+					<li>
+						<a href="#">menu item</a>
+						<ul>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+						</ul>
+					</li>
+					<li>
+						<a href="#">menu item</a>
+						<ul>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+						</ul>
+					</li>
+					<li>
+						<a href="#">menu item</a>
+						<ul>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+						</ul>
+					</li>
+					<li>
+						<a href="#">menu item</a>
+						<ul>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+							<li><a href="#">menu item</a></li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+			<li>
+				<a href="#">Some option</a>
+			</li>
+		</ul>
+			<a href="<?php echo base_url(); ?>" id="visit" class="right">Visit site</a>
+	    </div>
+		
+		
+		
