@@ -15,7 +15,7 @@ class Admin extends MX_Controller {
 		
 		$ci =& get_instance();
 		$this->t  	= $this->config->item('admin_template');
-		$this->_template		= "templates/$this->t/";
+		$this->_template		= "templates/$this->t";
 		
 		
 		
