@@ -31,9 +31,72 @@ class Redirection extends MX_Controller
 		
 		$base_url  = $this->config->item('base_url');
 
-		redirect($base_url.'sekolah.php/pengelola_web_sekolah/login_pertama');
+		redirect($base_url.'sekolah.php/register/login_pertama');
 					
 	
+	
+	
+	}
+	
+	
+	
+	//redirect to specific page
+	function cek_group()
+	{
+		$user_group = $this->ion_auth->get_user_group();
+		$group = $user_group->name;
+		$base_url  = $this->config->item('base_url');
+		
+		
+		$this->load->library('session');
+		//simpan user data
+		$this->load->model('M_user');
+		
+		$pengguna = $this->M_user->get_pengguna_id_by_user_id();
+		$sekolah = $this->M_user->get_sekolah_by_pengguna_id($pengguna->pengguna_id);
+		
+		
+		
+		$newdata = array(
+                    'PenggunaId'  => $pengguna->pengguna_id,
+                    'SekolahId'     => $sekolah->sekolah_id,
+                    
+                );
+
+		$this->session->set_userdata($newdata);
+		
+		
+		
+		if($group == "admin"){
+			redirect('admin');
+		
+		}
+		elseif($group == "kepala_dinas")
+		{
+			echo "go to kepala dinas page";
+			
+		}
+		elseif($group == "admin_sekolah")
+		{
+				redirect($base_url.'sekolah.php/pengelola');
+					
+			
+		}
+		elseif($group == "kepala_sekolah")
+		{
+			echo "go to kepala sekolah";
+			
+		}
+		elseif($group == "guru")
+		{
+			echo "go to kepala akun guru";
+			
+		}
+		elseif($group == "orang_tua_siswa")
+		{
+			echo "go to ortu siswa page";
+			
+		}
 	
 	
 	}

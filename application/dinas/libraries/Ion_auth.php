@@ -461,6 +461,11 @@ class Ion_auth
 		return FALSE;
 	}
 	
+	
+	
+	
+	
+	
 	//cek user pertama kali login, dari tabel pengguna
 	function cek_first($email,$password)
 	{
@@ -468,17 +473,26 @@ class Ion_auth
 		
 		$this->load->model('M_user');
 		
-		$user = $this->M_user->get_user_by_email($email);
-		if($email == $user->email AND $password == $user->password)
-		{
-			return TRUE;
-		
+		$users = $this->M_user->get_user_by_email($email);
+		if($users == TRUE) {
+			$user = $this->M_user->get_user_by_email($email);
+			if($email == $user->email AND $password == $user->password)
+			{
+				return TRUE;
+			
+			}
+			return FALSE;
 		}
-		return FALSE;
 	
 	
 	}
 	
+	function get_user_group()
+	{
+	
+		return $this->ion_auth_model->get_user_group();
+	
+	}
 	
 	
 

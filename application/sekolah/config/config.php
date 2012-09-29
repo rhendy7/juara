@@ -244,10 +244,12 @@ $config['encryption_key'] = 'G0rdNsY41-1RaA4SsunAs1v1nD4';
 | 'sess_match_useragent'	= Whether to match the User Agent when reading the session data
 | 'sess_time_to_update'		= how many seconds between CI refreshing Session Information
 |
+|
+|http://biostall.com/losing-codeigniter-sessions -> Session Lost
 */
-$config['sess_cookie_name']		= 'ci_session';
+$config['sess_cookie_name']		= 'CiSession';
 $config['sess_expiration']		= 7200;
-$config['sess_expire_on_close']	= FALSE;
+$config['sess_expire_on_close']	= TRUE;
 $config['sess_encrypt_cookie']	= FALSE;
 $config['sess_use_database']	= FALSE;
 $config['sess_table_name']		= 'ci_sessions';
@@ -374,6 +376,7 @@ $config['proxy_ips'] = '';
 
 
 $config['template']	= 'default';
+$config['template_admin']	= 'admintheme_blue';
 
 /* End of file config.php */
 /* Location: ./application/config/config.php */

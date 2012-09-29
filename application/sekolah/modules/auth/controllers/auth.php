@@ -1,700 +1,681 @@
-<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+<?php defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Auth extends MX_Controller
-{
+class Auth extends MX_Controller {
+
 	function __construct()
 	{
 		parent::__construct();
-
-		$this->load->helper(array('form', 'url'));
+		
+		$this->load->library('session');
 		$this->load->library('form_validation');
-		if(version_compare(CI_VERSION,'2.1.0','<')){
-			$this->load->library('security');
-		}
-		$this->load->library('tank_auth');
-		$this->lang->load('tank_auth');
-		
-		
-		
+		$this->load->helper('url');
 		$ci =& get_instance();
-		$this->t  	= 'default';
+		$this->t  	= 'admintheme_blue';
 		$this->_template		= "templates/$this->t/";
 		
+
+		$this->load->database();
+
+		$this->form_validation->set_error_delimiters($this->config->item('error_start_delimiter', 'ion_auth'), $this->config->item('error_end_delimiter', 'ion_auth'));
 	}
 
+	//redirect if needed, otherwise display the user list
 	function index()
 	{
-		if ($message = $this->session->flashdata('message')) {
-			$this->load->view('tank/general_message', array('message' => $message));
-		} else {
-			redirect('/auth/login/');
+
+		if (!$this->ion_auth->logged_in())
+		{
+			//redirect them to the login page
+			redirect('auth/login', 'refresh');
+		}
+		elseif (!$this->ion_auth->is_admin())
+		{
+			//redirect them to the home page because they must be an administrator to view this
+			redirect($this->config->item('base_url'), 'refresh');
+		}
+		else
+		{
+			//set the flash data error message if there is one
+			$data['message'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('message');
+
+			//list the users
+			$data['users'] = $this->ion_auth->users()->result();
+			foreach ($data['users'] as $k => $user)
+			{
+				$data['users'][$k]->groups = $this->ion_auth->get_users_groups($user->id)->result();
+			}
+
+
+			$this->load->view('auth/index', $data);
 		}
 	}
 
-	/**
-	 * Login user on the site
-	 *
-	 * @return void
-	 */
+	function tes()
+	{
+	
+		modules::run('redirection'); 
+	
+	}
+	
+	
+	//log the user in
 	function login()
 	{
-		if ($this->tank_auth->is_logged_in()) {									// logged in
-			redirect('admin');									//load admin page
+		$data['title'] = "Login";
 
-		} elseif ($this->tank_auth->is_logged_in(FALSE)) {						// logged in, not activated
-			redirect('/auth/send_again/');
+		//validate form input
+		$this->form_validation->set_rules('identity', 'Identity', 'required');
+		$this->form_validation->set_rules('password', 'Password', 'required');
 
-		} else {
-			$data['login_by_username'] = ($this->config->item('login_by_username', 'tank_auth') AND
-					$this->config->item('use_username', 'tank_auth'));
-			$data['login_by_email'] = $this->config->item('login_by_email', 'tank_auth');
+		if ($this->form_validation->run() == true)
+		{ 
+		
+			//cek pertama login pengguna dengan loading M_user di tb_pengguna
+			if ($this->ion_auth->cek_first($this->input->post('identity'), $this->input->post('password'))== TRUE)
+			{
+				//buat akun dengan email dan password ini 
+				//load M_user
+				$this->load->model('M_user');
+				$pengguna = $this->M_user->get_user_by_email($this->input->post('identity'));
+				
+					$username = $pengguna->username;
+					$email    = $pengguna->email;
+					$password = $pengguna->password;
 
-			$this->form_validation->set_rules('login', 'Login', 'trim|required|xss_clean');
-			$this->form_validation->set_rules('password', 'Password', 'trim|required|xss_clean');
-			$this->form_validation->set_rules('remember', 'Remember me', 'integer');
-			$this->form_validation->set_error_delimiters('<span class="error">', '</span>');
-			
-			// Get login for counting attempts to login
-			if ($this->config->item('login_count_attempts', 'tank_auth') AND
-					($login = $this->input->post('login'))) {
-				$login = $this->security->xss_clean($login);
-			} else {
-				$login = '';
-			}
-
-			$data['use_recaptcha'] = $this->config->item('use_recaptcha', 'tank_auth');
-			if ($this->tank_auth->is_max_login_attempts_exceeded($login)) {
-				if ($data['use_recaptcha'])
-					$this->form_validation->set_rules('recaptcha_response_field', 'Confirmation Code', 'trim|xss_clean|required|callback__check_recaptcha');
-				else
-					$this->form_validation->set_rules('captcha', 'Confirmation Code', 'trim|xss_clean|required|callback__check_captcha');
-			}
-			$data['errors'] = array();
-
-			if ($this->form_validation->run()) {								// validation ok
-				if ($this->tank_auth->login(
-						$this->form_validation->set_value('login'),
-						$this->form_validation->set_value('password'),
-						$this->form_validation->set_value('remember'),
-						$data['login_by_username'],
-						$data['login_by_email'])) {								// success
-					redirect('admin');							//load admin page
-
-				} else {
-					$errors = $this->tank_auth->get_error_message();
-					if (isset($errors['banned'])) {								// banned user
-						$this->_show_message($this->lang->line('auth_message_banned').' '.$errors['banned']);
-
-					} elseif (isset($errors['not_activated'])) {				// not activated user
-						redirect('/auth/send_again/');
-
-					} else {													// fail
-						foreach ($errors as $k => $v)	$data['errors'][$k] = $this->lang->line($v);
+					$additional_data = array(
+						'pengguna_id' => $pengguna->pengguna_id,
+					);
+					
+				
+				//kalo sudah ada pengguna_id di tb_auth_user
+				//maka cukup update datanya saja....
+				$auth_user = $this->M_user->get_user_by_pengguna_id_auth_user($pengguna->pengguna_id);
+				if($auth_user == TRUE) {
+					if($auth_user->email != $pengguna->email) {
+					
+						$this->ion_auth->update($auth_user->id, $data);
+					
 					}
 				}
-			}
-			$data['show_captcha'] = FALSE;
-			if ($this->tank_auth->is_max_login_attempts_exceeded($login)) {
-				$data['show_captcha'] = TRUE;
-				if ($data['use_recaptcha']) {
-					$data['recaptcha_html'] = $this->_create_recaptcha();
-				} else {
-					$data['captcha_html'] = $this->_create_captcha();
+				else 
+				{
+					 $this->session->set_userdata('email', $pengguna->email);
+					
+					//go to login pertama pengelola
+					 modules::run('redirection'); 
+					
+					
 				}
+				//then form masukkan kordinat dilengkapi dengan nama profil sekolah.
+			
 			}
 			
-			$this->template->set('title', 'Login Form');
-			$this->template->load($this->_template.'one_col', 'content/V_login',$data);
-			// $this->load->view( 'content/V_login',$data);
+			
+			else 
+			{
+					//check to see if the user is logging in
+					//check for "remember me"
+					$remember = (bool) $this->input->post('remember');
+
+					if ($this->ion_auth->login($this->input->post('identity'), $this->input->post('password'), $remember))
+					{ 
+						//if the login is successful
+						//redirect them back to the home page
+						$this->session->set_flashdata('message', $this->ion_auth->messages());
+						
+						modules::run('redirection/cek_group'); 
+						
+						
+						// redirect('admin', 'refresh');
+					}
+					else
+					{ 
+						//if the login was un-successful
+						//redirect them back to the login page
+						$this->session->set_flashdata('message', $this->ion_auth->errors());
+						redirect('auth/login', 'refresh'); //use redirects instead of loading views for compatibility with MY_Controller libraries
+					}
+			}
+		}
+		else
+		{  
+			//the user is not logging in so display the login page
+			//set the flash data error message if there is one
+			$data['message'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('message');
+
+			$data['identity'] = array('name' => 'identity',
+				'id' => 'identity',
+				'type' => 'text',
+				'value' => $this->form_validation->set_value('identity'),
+			);
+			$data['password'] = array('name' => 'password',
+				'id' => 'password',
+				'type' => 'password',
+			);
+
+				$this->template->set('title', 'Login Form');
+				$this->template->load($this->_template.'login', 'content/V_login',$data);
 		}
 	}
 
-	/**
-	 * Logout user
-	 *
-	 * @return void
-	 */
+	//log the user out
 	function logout()
 	{
-		$this->tank_auth->logout();
+		$data['title'] = "Logout";
 
-		$this->_show_message($this->lang->line('auth_message_logged_out'));
+		//log the user out
+		$logout = $this->ion_auth->logout();
+
+		//redirect them to the login page
+		$this->session->set_flashdata('message', $this->ion_auth->messages());
+		redirect('auth/login', 'refresh');
 	}
 
-	/**
-	 * Register user on the site
-	 *
-	 * @return void
-	 */
-	function register()
-	{
-		if ($this->tank_auth->is_logged_in()) {									// logged in
-			redirect('');
-
-		} elseif ($this->tank_auth->is_logged_in(FALSE)) {						// logged in, not activated
-			redirect('/auth/send_again/');
-
-		} elseif (!$this->config->item('allow_registration', 'tank_auth')) {	// registration is off
-			$this->_show_message($this->lang->line('auth_message_registration_disabled'));
-
-		} else {
-			$use_username = $this->config->item('use_username', 'tank_auth');
-			if ($use_username) {
-				$this->form_validation->set_rules('username', 'Username', 'trim|required|xss_clean|min_length['.$this->config->item('username_min_length', 'tank_auth').']|max_length['.$this->config->item('username_max_length', 'tank_auth').']|alpha_dash');
-			}
-			$this->form_validation->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email');
-			$this->form_validation->set_rules('password', 'Password', 'trim|required|xss_clean|min_length['.$this->config->item('password_min_length', 'tank_auth').']|max_length['.$this->config->item('password_max_length', 'tank_auth').']|alpha_dash');
-			$this->form_validation->set_rules('confirm_password', 'Confirm Password', 'trim|required|xss_clean|matches[password]');
-			
-			
-			$captcha_registration	= $this->config->item('captcha_registration', 'tank_auth');
-			$use_recaptcha			= $this->config->item('use_recaptcha', 'tank_auth');
-			if ($captcha_registration) {
-				if ($use_recaptcha) {
-					$this->form_validation->set_rules('recaptcha_response_field', 'Confirmation Code', 'trim|xss_clean|required|callback__check_recaptcha');
-				} else {
-					$this->form_validation->set_rules('captcha', 'Confirmation Code', 'trim|xss_clean|required|callback__check_captcha');
-				}
-			}
-			$data['errors'] = array();
-
-			$email_activation = $this->config->item('email_activation', 'tank_auth');
-
-			if ($this->form_validation->run()) {								// validation ok
-				if (!is_null($data = $this->tank_auth->create_user(
-						$use_username ? $this->form_validation->set_value('username') : '',
-						$this->form_validation->set_value('email'),
-						$this->form_validation->set_value('password'),
-						$email_activation))) {									// success
-
-					$data['site_name'] = $this->config->item('website_name', 'tank_auth');
-
-					if ($email_activation) {									// send "activate" email
-						$data['activation_period'] = $this->config->item('email_activation_expire', 'tank_auth') / 3600;
-
-						$this->_send_email('activate', $data['email'], $data);
-
-						unset($data['password']); // Clear password (just for any case)
-
-						$this->_show_message($this->lang->line('auth_message_registration_completed_1'));
-
-					} else {
-						if ($this->config->item('email_account_details', 'tank_auth')) {	// send "welcome" email
-
-							$this->_send_email('welcome', $data['email'], $data);
-						}
-						unset($data['password']); // Clear password (just for any case)
-
-						$this->_show_message($this->lang->line('auth_message_registration_completed_2').' '.anchor('/auth/login/', 'Login'));
-					}
-				} else {
-					$errors = $this->tank_auth->get_error_message();
-					foreach ($errors as $k => $v)	$data['errors'][$k] = $this->lang->line($v);
-				}
-			}
-			if ($captcha_registration) {
-				if ($use_recaptcha) {
-					$data['recaptcha_html'] = $this->_create_recaptcha();
-				} else {
-					$data['captcha_html'] = $this->_create_captcha();
-				}
-			}
-			$data['use_username'] = $use_username;
-			$data['captcha_registration'] = $captcha_registration;
-			$data['use_recaptcha'] = $use_recaptcha;
-			$this->load->view('tank/register_form', $data);
-		}
-	}
-
-	
-	
-	/**
-	 * Tambah Pengelola Utama Sekolah
-	 *
-	 * @return void
-	 */
-	function add_pengelola()
-	{
-		if (!$this->config->item('allow_registration', 'tank_auth')) {	// registration is off
-			$this->_show_message($this->lang->line('auth_message_registration_disabled'));
-
-		} else {
-			$use_username = $this->config->item('use_username', 'tank_auth');
-			if ($use_username) {
-				$this->form_validation->set_rules('username', 'Username', 'trim|required|xss_clean|min_length['.$this->config->item('username_min_length', 'tank_auth').']|max_length['.$this->config->item('username_max_length', 'tank_auth').']|alpha_dash');
-			}
-			$this->form_validation->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email');
-			$this->form_validation->set_rules('password', 'Password', 'trim|required|xss_clean|min_length['.$this->config->item('password_min_length', 'tank_auth').']|max_length['.$this->config->item('password_max_length', 'tank_auth').']|alpha_dash');
-			$this->form_validation->set_rules('confirm_password', 'Confirm Password', 'trim|required|xss_clean|matches[password]');
-			
-			//custom
-			$this->form_validation->set_rules('id_sekolah', 'id_sekolah');
-			$this->form_validation->set_rules('role_id', 'role_id');
-			$this->form_validation->set_message('required', 'Harus diisi');
-			$this->form_validation->set_error_delimiters('<span class="input_error">', '</span>');
-		
-		
-			$captcha_registration	= $this->config->item('captcha_registration', 'tank_auth');
-			$use_recaptcha			= $this->config->item('use_recaptcha', 'tank_auth');
-			if ($captcha_registration) {
-				if ($use_recaptcha) {
-					$this->form_validation->set_rules('recaptcha_response_field', 'Confirmation Code', 'trim|xss_clean|required|callback__check_recaptcha');
-				} else {
-					$this->form_validation->set_rules('captcha', 'Confirmation Code', 'trim|xss_clean|required|callback__check_captcha');
-				}
-			}
-			$data['errors'] = array();
-
-			$email_activation = $this->config->item('email_activation', 'tank_auth');
-
-			if ($this->form_validation->run()) {								// validation ok
-				if (!is_null($data = $this->tank_auth->add_pengelola(
-						$use_username ? $this->form_validation->set_value('username') : '',
-						$this->form_validation->set_value('email'),
-						$this->form_validation->set_value('password'),
-						$email_activation,						
-						$this->form_validation->set_value('role_id'),
-						$this->form_validation->set_value('id_sekolah')))) {									// success
-
-					$data['site_name'] = $this->config->item('website_name', 'tank_auth');
-
-					if ($email_activation) {									// send "activate" email
-						$data['activation_period'] = $this->config->item('email_activation_expire', 'tank_auth') / 3600;
-
-						$this->_send_email('activate', $data['email'], $data);
-
-						unset($data['password']); // Clear password (just for any case)
-
-						$this->_show_message($this->lang->line('auth_message_registration_completed_1'));
-
-					} else {
-						if ($this->config->item('email_account_details', 'tank_auth')) {	// send "welcome" email
-
-							$this->_send_email('welcome', $data['email'], $data);
-						}
-						unset($data['password']); // Clear password (just for any case)
-
-						$this->_show_message($this->lang->line('auth_message_registration_completed_2').' '.anchor('/auth/login/', 'Login'));
-					}
-				} else {
-					$errors = $this->tank_auth->get_error_message();
-					foreach ($errors as $k => $v)	$data['errors'][$k] = $this->lang->line($v);
-				}
-			}
-			if ($captcha_registration) {
-				if ($use_recaptcha) {
-					$data['recaptcha_html'] = $this->_create_recaptcha();
-				} else {
-					$data['captcha_html'] = $this->_create_captcha();
-				}
-			}
-			$data['id_sekolah'] = $this->uri->segment(3);
-			$data['use_username'] = $use_username;
-			$data['captcha_registration'] = $captcha_registration;
-			$data['use_recaptcha'] = $use_recaptcha;
-			
-			$this->template->set('title', 'Tambah Pengelola Utama Sekolah');
-			$this->template->load($this->_template.'two_col', 'tank/add_pengelola',$data);
-			
-			
-			
-		}
-	}
-	
-	
-	
-	
-	
-	
-	
-	/**
-	 * Send activation email again, to the same or new email address
-	 *
-	 * @return void
-	 */
-	function send_again()
-	{
-		if (!$this->tank_auth->is_logged_in(FALSE)) {							// not logged in or activated
-			redirect('/auth/login/');
-
-		} else {
-			$this->form_validation->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email');
-
-			$data['errors'] = array();
-
-			if ($this->form_validation->run()) {								// validation ok
-				if (!is_null($data = $this->tank_auth->change_email(
-						$this->form_validation->set_value('email')))) {			// success
-
-					$data['site_name']	= $this->config->item('website_name', 'tank_auth');
-					$data['activation_period'] = $this->config->item('email_activation_expire', 'tank_auth') / 3600;
-
-					$this->_send_email('activate', $data['email'], $data);
-
-					$this->_show_message(sprintf($this->lang->line('auth_message_activation_email_sent'), $data['email']));
-
-				} else {
-					$errors = $this->tank_auth->get_error_message();
-					foreach ($errors as $k => $v)	$data['errors'][$k] = $this->lang->line($v);
-				}
-			}
-			$this->load->view('tank/send_again_form', $data);
-		}
-	}
-
-	/**
-	 * Activate user account.
-	 * User is verified by user_id and authentication code in the URL.
-	 * Can be called by clicking on link in mail.
-	 *
-	 * @return void
-	 */
-	function activate()
-	{
-		$user_id		= $this->uri->segment(3);
-		$new_email_key	= $this->uri->segment(4);
-
-		// Activate user
-		if ($this->tank_auth->activate_user($user_id, $new_email_key)) {		// success
-			$this->tank_auth->logout();
-			$this->_show_message($this->lang->line('auth_message_activation_completed').' '.anchor('/auth/login/', 'Login'));
-
-		} else {																// fail
-			$this->_show_message($this->lang->line('auth_message_activation_failed'));
-		}
-	}
-
-	/**
-	 * Generate reset code (to change password) and send it to user
-	 *
-	 * @return void
-	 */
-	function forgot_password()
-	{
-		if ($this->tank_auth->is_logged_in()) {									// logged in
-			redirect('');
-
-		} elseif ($this->tank_auth->is_logged_in(FALSE)) {						// logged in, not activated
-			redirect('/auth/send_again/');
-
-		} else {
-			$this->form_validation->set_rules('login', 'Email or login', 'trim|required|xss_clean');
-
-			$data['errors'] = array();
-
-			if ($this->form_validation->run()) {								// validation ok
-				if (!is_null($data = $this->tank_auth->forgot_password(
-						$this->form_validation->set_value('login')))) {
-
-					$data['site_name'] = $this->config->item('website_name', 'tank_auth');
-
-					// Send email with password activation link
-					$this->_send_email('forgot_password', $data['email'], $data);
-
-					$this->_show_message($this->lang->line('auth_message_new_password_sent'));
-
-				} else {
-					$errors = $this->tank_auth->get_error_message();
-					foreach ($errors as $k => $v)	$data['errors'][$k] = $this->lang->line($v);
-				}
-			}
-			$this->load->view('tank/forgot_password_form', $data);
-		}
-	}
-
-	/**
-	 * Replace user password (forgotten) with a new one (set by user).
-	 * User is verified by user_id and authentication code in the URL.
-	 * Can be called by clicking on link in mail.
-	 *
-	 * @return void
-	 */
-	function reset_password()
-	{
-		$user_id		= $this->uri->segment(3);
-		$new_pass_key	= $this->uri->segment(4);
-
-		$this->form_validation->set_rules('new_password', 'New Password', 'trim|required|xss_clean|min_length['.$this->config->item('password_min_length', 'tank_auth').']|max_length['.$this->config->item('password_max_length', 'tank_auth').']|alpha_dash');
-		$this->form_validation->set_rules('confirm_new_password', 'Confirm new Password', 'trim|required|xss_clean|matches[new_password]');
-
-		$data['errors'] = array();
-
-		if ($this->form_validation->run()) {								// validation ok
-			if (!is_null($data = $this->tank_auth->reset_password(
-					$user_id, $new_pass_key,
-					$this->form_validation->set_value('new_password')))) {	// success
-
-				$data['site_name'] = $this->config->item('website_name', 'tank_auth');
-
-				// Send email with new password
-				$this->_send_email('reset_password', $data['email'], $data);
-
-				$this->_show_message($this->lang->line('auth_message_new_password_activated').' '.anchor('/auth/login/', 'Login'));
-
-			} else {														// fail
-				$this->_show_message($this->lang->line('auth_message_new_password_failed'));
-			}
-		} else {
-			// Try to activate user by password key (if not activated yet)
-			if ($this->config->item('email_activation', 'tank_auth')) {
-				$this->tank_auth->activate_user($user_id, $new_pass_key, FALSE);
-			}
-
-			if (!$this->tank_auth->can_reset_password($user_id, $new_pass_key)) {
-				$this->_show_message($this->lang->line('auth_message_new_password_failed'));
-			}
-		}
-		$this->load->view('tank/reset_password_form', $data);
-	}
-
-	/**
-	 * Change user password
-	 *
-	 * @return void
-	 */
+	//change password
 	function change_password()
 	{
-		if (!$this->tank_auth->is_logged_in()) {								// not logged in or not activated
-			redirect('/auth/login/');
+		$this->form_validation->set_rules('old', 'Old password', 'required');
+		$this->form_validation->set_rules('new', 'New Password', 'required|min_length[' . $this->config->item('min_password_length', 'ion_auth') . ']|max_length[' . $this->config->item('max_password_length', 'ion_auth') . ']|matches[new_confirm]');
+		$this->form_validation->set_rules('new_confirm', 'Confirm New Password', 'required');
 
-		} else {
-			$this->form_validation->set_rules('old_password', 'Old Password', 'trim|required|xss_clean');
-			$this->form_validation->set_rules('new_password', 'New Password', 'trim|required|xss_clean|min_length['.$this->config->item('password_min_length', 'tank_auth').']|max_length['.$this->config->item('password_max_length', 'tank_auth').']|alpha_dash');
-			$this->form_validation->set_rules('confirm_new_password', 'Confirm new Password', 'trim|required|xss_clean|matches[new_password]');
+		if (!$this->ion_auth->logged_in())
+		{
+			redirect('auth/login', 'refresh');
+		}
 
-			$data['errors'] = array();
+		$user = $this->ion_auth->user()->row();
 
-			if ($this->form_validation->run()) {								// validation ok
-				if ($this->tank_auth->change_password(
-						$this->form_validation->set_value('old_password'),
-						$this->form_validation->set_value('new_password'))) {	// success
-					$this->_show_message($this->lang->line('auth_message_password_changed'));
+		if ($this->form_validation->run() == false)
+		{ 
+			//display the form
+			//set the flash data error message if there is one
+			$data['message'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('message');
 
-				} else {														// fail
-					$errors = $this->tank_auth->get_error_message();
-					foreach ($errors as $k => $v)	$data['errors'][$k] = $this->lang->line($v);
+			$data['min_password_length'] = $this->config->item('min_password_length', 'ion_auth');
+			$data['old_password'] = array(
+				'name' => 'old',
+				'id'   => 'old',
+				'type' => 'password',
+			);
+			$data['new_password'] = array(
+				'name' => 'new',
+				'id'   => 'new',
+				'type' => 'password',
+				'pattern' => '^.{'.$data['min_password_length'].'}.*$',
+			);
+			$data['new_password_confirm'] = array(
+				'name' => 'new_confirm',
+				'id'   => 'new_confirm',
+				'type' => 'password',
+				'pattern' => '^.{'.$data['min_password_length'].'}.*$',
+			);
+			$data['user_id'] = array(
+				'name'  => 'user_id',
+				'id'    => 'user_id',
+				'type'  => 'hidden',
+				'value' => $user->id,
+			);
+
+			//render
+			$this->load->view('auth/change_password', $data);
+		}
+		else
+		{
+			$identity = $this->session->userdata($this->config->item('identity', 'ion_auth'));
+
+			$change = $this->ion_auth->change_password($identity, $this->input->post('old'), $this->input->post('new'));
+
+			if ($change)
+			{ 
+				//if the password was successfully changed
+				$this->session->set_flashdata('message', $this->ion_auth->messages());
+				$this->logout();
+			}
+			else
+			{
+				$this->session->set_flashdata('message', $this->ion_auth->errors());
+				redirect('auth/change_password', 'refresh');
+			}
+		}
+	}
+
+	//forgot password
+	function forgot_password()
+	{
+		$this->form_validation->set_rules('email', 'Email Address', 'required');
+		if ($this->form_validation->run() == false)
+		{
+			//setup the input
+			$data['email'] = array('name' => 'email',
+				'id' => 'email',
+			);
+
+			//set any errors and display the form
+			$data['message'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('message');
+			$this->load->view('auth/forgot_password', $data);
+		}
+		else
+		{
+			//run the forgotten password method to email an activation code to the user
+			$forgotten = $this->ion_auth->forgotten_password($this->input->post('email'));
+
+			if ($forgotten)
+			{ 
+				//if there were no errors
+				$this->session->set_flashdata('message', $this->ion_auth->messages());
+				redirect("auth/login", 'refresh'); //we should display a confirmation page here instead of the login page
+			}
+			else
+			{
+				$this->session->set_flashdata('message', $this->ion_auth->errors());
+				redirect("auth/forgot_password", 'refresh');
+			}
+		}
+	}
+
+	//reset password - final step for forgotten password
+	public function reset_password($code = NULL)
+	{
+		if (!$code)
+		{
+			show_404();
+		}
+
+		$user = $this->ion_auth->forgotten_password_check($code);
+
+		if ($user)
+		{  
+			//if the code is valid then display the password reset form
+
+			$this->form_validation->set_rules('new', 'New Password', 'required|min_length[' . $this->config->item('min_password_length', 'ion_auth') . ']|max_length[' . $this->config->item('max_password_length', 'ion_auth') . ']|matches[new_confirm]');
+			$this->form_validation->set_rules('new_confirm', 'Confirm New Password', 'required');
+
+			if ($this->form_validation->run() == false)
+			{
+				//display the form
+
+				//set the flash data error message if there is one
+				$data['message'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('message');
+
+				$data['min_password_length'] = $this->config->item('min_password_length', 'ion_auth');
+				$data['new_password'] = array(
+					'name' => 'new',
+					'id'   => 'new',
+				'type' => 'password',
+					'pattern' => '^.{'.$data['min_password_length'].'}.*$',
+				);
+				$data['new_password_confirm'] = array(
+					'name' => 'new_confirm',
+					'id'   => 'new_confirm',
+					'type' => 'password',
+					'pattern' => '^.{'.$data['min_password_length'].'}.*$',
+				);
+				$data['user_id'] = array(
+					'name'  => 'user_id',
+					'id'    => 'user_id',
+					'type'  => 'hidden',
+					'value' => $user->id,
+				);
+				$data['csrf'] = $this->_get_csrf_nonce();
+				$data['code'] = $code;
+
+				//render
+				$this->load->view('auth/reset_password', $data);
+			}
+			else
+			{
+				// do we have a valid request?
+				if ($this->_valid_csrf_nonce() === FALSE || $user->id != $this->input->post('user_id')) 
+				{
+
+					//something fishy might be up
+					$this->ion_auth->clear_forgotten_password_code($code);
+
+					show_error('This form post did not pass our security checks.');
+
+				} 
+				else 
+				{
+					// finally change the password
+					$identity = $user->{$this->config->item('identity', 'ion_auth')};
+
+					$change = $this->ion_auth->reset_password($identity, $this->input->post('new'));
+
+					if ($change)
+					{ 
+						//if the password was successfully changed
+						$this->session->set_flashdata('message', $this->ion_auth->messages());
+						$this->logout();
+					}
+					else
+					{
+						$this->session->set_flashdata('message', $this->ion_auth->errors());
+						redirect('auth/reset_password/' . $code, 'refresh');
+					}
 				}
 			}
-			$this->load->view('tank/change_password_form', $data);
+		}
+		else
+		{ 
+			//if the code is invalid then send them back to the forgot password page
+			$this->session->set_flashdata('message', $this->ion_auth->errors());
+			redirect("auth/forgot_password", 'refresh');
 		}
 	}
 
-	/**
-	 * Change user email
-	 *
-	 * @return void
-	 */
-	function change_email()
+
+	//activate the user
+	function activate($id, $code=false)
 	{
-		if (!$this->tank_auth->is_logged_in()) {								// not logged in or not activated
-			redirect('/auth/login/');
+		if ($code !== false)
+		{
+			$activation = $this->ion_auth->activate($id, $code);
+		}
+		else if ($this->ion_auth->is_admin())
+		{
+			$activation = $this->ion_auth->activate($id);
+		}
 
-		} else {
-			$this->form_validation->set_rules('password', 'Password', 'trim|required|xss_clean');
-			$this->form_validation->set_rules('email', 'Email', 'trim|required|xss_clean|valid_email');
+		if ($activation)
+		{
+			//redirect them to the auth page
+			$this->session->set_flashdata('message', $this->ion_auth->messages());
+			redirect("auth", 'refresh');
+		}
+		else
+		{
+			//redirect them to the forgot password page
+			$this->session->set_flashdata('message', $this->ion_auth->errors());
+			redirect("auth/forgot_password", 'refresh');
+		}
+	}
 
-			$data['errors'] = array();
+	//deactivate the user
+	function deactivate($id = NULL)
+	{
+		$id = $this->config->item('use_mongodb', 'ion_auth') ? (string) $id : (int) $id;
 
-			if ($this->form_validation->run()) {								// validation ok
-				if (!is_null($data = $this->tank_auth->set_new_email(
-						$this->form_validation->set_value('email'),
-						$this->form_validation->set_value('password')))) {			// success
+		$this->load->library('form_validation');
+		$this->form_validation->set_rules('confirm', 'confirmation', 'required');
+		$this->form_validation->set_rules('id', 'user ID', 'required|alpha_numeric');
 
-					$data['site_name'] = $this->config->item('website_name', 'tank_auth');
+		if ($this->form_validation->run() == FALSE)
+		{
+			// insert csrf check
+			$data['csrf'] = $this->_get_csrf_nonce();
+			$data['user'] = $this->ion_auth->user($id)->row();
 
-					// Send email with new email address and its activation link
-					$this->_send_email('change_email', $data['new_email'], $data);
+			$this->load->view('auth/deactivate_user', $data);
+		}
+		else
+		{
+			// do we really want to deactivate?
+			if ($this->input->post('confirm') == 'yes')
+			{
+				// do we have a valid request?
+				if ($this->_valid_csrf_nonce() === FALSE || $id != $this->input->post('id'))
+				{				
+					show_error('This form post did not pass our security checks.');
+				}
 
-					$this->_show_message(sprintf($this->lang->line('auth_message_new_email_sent'), $data['new_email']));
-
-				} else {
-					$errors = $this->tank_auth->get_error_message();
-					foreach ($errors as $k => $v)	$data['errors'][$k] = $this->lang->line($v);
+				// do we have the right userlevel?
+				if ($this->ion_auth->logged_in() && $this->ion_auth->is_admin())
+				{
+					$this->ion_auth->deactivate($id);
 				}
 			}
-			$this->load->view('tank/change_email_form', $data);
+
+			//redirect them back to the auth page
+			redirect('auth', 'refresh');
 		}
 	}
 
-	/**
-	 * Replace user email with a new one.
-	 * User is verified by user_id and authentication code in the URL.
-	 * Can be called by clicking on link in mail.
-	 *
-	 * @return void
-	 */
-	function reset_email()
+	//create a new user
+	function create_user()
 	{
-		$user_id		= $this->uri->segment(3);
-		$new_email_key	= $this->uri->segment(4);
+		$data['title'] = "Create User";
 
-		// Reset email
-		if ($this->tank_auth->activate_new_email($user_id, $new_email_key)) {	// success
-			$this->tank_auth->logout();
-			$this->_show_message($this->lang->line('auth_message_new_email_activated').' '.anchor('/auth/login/', 'Login'));
+		if (!$this->ion_auth->logged_in() || !$this->ion_auth->is_admin())
+		{
+			redirect('auth', 'refresh');
+		}
 
-		} else {																// fail
-			$this->_show_message($this->lang->line('auth_message_new_email_failed'));
+		//validate form input
+		$this->form_validation->set_rules('first_name', 'First Name', 'required|xss_clean');
+		$this->form_validation->set_rules('last_name', 'Last Name', 'required|xss_clean');
+		$this->form_validation->set_rules('email', 'Email Address', 'required|valid_email');
+		$this->form_validation->set_rules('phone1', 'First Part of Phone', 'required|xss_clean|min_length[3]|max_length[3]');
+		$this->form_validation->set_rules('phone2', 'Second Part of Phone', 'required|xss_clean|min_length[3]|max_length[3]');
+		$this->form_validation->set_rules('phone3', 'Third Part of Phone', 'required|xss_clean|min_length[4]|max_length[4]');
+		$this->form_validation->set_rules('company', 'Company Name', 'required|xss_clean');
+		$this->form_validation->set_rules('password', 'Password', 'required|min_length[' . $this->config->item('min_password_length', 'ion_auth') . ']|max_length[' . $this->config->item('max_password_length', 'ion_auth') . ']|matches[password_confirm]');
+		$this->form_validation->set_rules('password_confirm', 'Password Confirmation', 'required');
+
+		if ($this->form_validation->run() == true)
+		{
+			$username = strtolower($this->input->post('first_name')) . ' ' . strtolower($this->input->post('last_name'));
+			$email    = $this->input->post('email');
+			$password = $this->input->post('password');
+
+			$additional_data = array(
+				'pengguna_id' => $this->input->post('pengguna_id'),
+				
+			);
+		}
+		if ($this->form_validation->run() == true && $this->ion_auth->register($username, $password, $email, $additional_data))
+		{ 
+			//check to see if we are creating the user
+			//redirect them back to the admin page
+			$this->session->set_flashdata('message', $this->ion_auth->messages());
+			redirect("auth", 'refresh');
+		}
+		else
+		{ 
+			//display the create user form
+			//set the flash data error message if there is one
+			$data['message'] = (validation_errors() ? validation_errors() : ($this->ion_auth->errors() ? $this->ion_auth->errors() : $this->session->flashdata('message')));
+
+			$data['first_name'] = array(
+				'name'  => 'first_name',
+				'id'    => 'first_name',
+				'type'  => 'text',
+				'value' => $this->form_validation->set_value('first_name'),
+			);
+			$data['last_name'] = array(
+				'name'  => 'last_name',
+				'id'    => 'last_name',
+				'type'  => 'text',
+				'value' => $this->form_validation->set_value('last_name'),
+			);
+			$data['email'] = array(
+				'name'  => 'email',
+				'id'    => 'email',
+				'type'  => 'text',
+				'value' => $this->form_validation->set_value('email'),
+			);
+			$data['company'] = array(
+				'name'  => 'company',
+				'id'    => 'company',
+				'type'  => 'text',
+				'value' => $this->form_validation->set_value('company'),
+			);
+			$data['phone1'] = array(
+				'name'  => 'phone1',
+				'id'    => 'phone1',
+				'type'  => 'text',
+				'value' => $this->form_validation->set_value('phone1'),
+			);
+			$data['phone2'] = array(
+				'name'  => 'phone2',
+				'id'    => 'phone2',
+				'type'  => 'text',
+				'value' => $this->form_validation->set_value('phone2'),
+			);
+			$data['phone3'] = array(
+				'name'  => 'phone3',
+				'id'    => 'phone3',
+				'type'  => 'text',
+				'value' => $this->form_validation->set_value('phone3'),
+			);
+			$data['password'] = array(
+				'name'  => 'password',
+				'id'    => 'password',
+				'type'  => 'password',
+				'value' => $this->form_validation->set_value('password'),
+			);
+			$data['password_confirm'] = array(
+				'name'  => 'password_confirm',
+				'id'    => 'password_confirm',
+				'type'  => 'password',
+				'value' => $this->form_validation->set_value('password_confirm'),
+			);
+
+			$this->load->view('auth/create_user', $data);
 		}
 	}
 
-	/**
-	 * Delete user from the site (only when user is logged in)
-	 *
-	 * @return void
-	 */
-	function unregister()
+	//edit a user
+	function edit_user($id)
 	{
-		if (!$this->tank_auth->is_logged_in()) {								// not logged in or not activated
-			redirect('/auth/login/');
+		$data['title'] = "Edit User";
 
-		} else {
-			$this->form_validation->set_rules('password', 'Password', 'trim|required|xss_clean');
+		if (!$this->ion_auth->logged_in() || !$this->ion_auth->is_admin())
+		{
+			redirect('auth', 'refresh');
+		}
 
-			$data['errors'] = array();
+		$user = $this->ion_auth->user($id)->row();
 
-			if ($this->form_validation->run()) {								// validation ok
-				if ($this->tank_auth->delete_user(
-						$this->form_validation->set_value('password'))) {		// success
-					$this->_show_message($this->lang->line('auth_message_unregistered'));
+		//process the phone number
+		if (isset($user->phone) && !empty($user->phone))
+		{
+			$user->phone = explode('-', $user->phone);
+		}
 
-				} else {														// fail
-					$errors = $this->tank_auth->get_error_message();
-					foreach ($errors as $k => $v)	$data['errors'][$k] = $this->lang->line($v);
-				}
+		//validate form input
+		$this->form_validation->set_rules('first_name', 'First Name', 'required|xss_clean');
+		$this->form_validation->set_rules('last_name', 'Last Name', 'required|xss_clean');
+		$this->form_validation->set_rules('phone1', 'First Part of Phone', 'required|xss_clean|min_length[3]|max_length[3]');
+		$this->form_validation->set_rules('phone2', 'Second Part of Phone', 'required|xss_clean|min_length[3]|max_length[3]');
+		$this->form_validation->set_rules('phone3', 'Third Part of Phone', 'required|xss_clean|min_length[4]|max_length[4]');
+		$this->form_validation->set_rules('company', 'Company Name', 'required|xss_clean');
+
+		if (isset($_POST) && !empty($_POST))
+		{
+			// do we have a valid request?
+			if ($this->_valid_csrf_nonce() === FALSE || $id != $this->input->post('id'))
+			{
+				show_error('This form post did not pass our security checks.');
 			}
-			$this->load->view('tank/unregister_form', $data);
+
+			$data = array(
+				'first_name' => $this->input->post('first_name'),
+				'last_name'  => $this->input->post('last_name'),
+				'company'    => $this->input->post('company'),
+				'phone'      => $this->input->post('phone1') . '-' . $this->input->post('phone2') . '-' . $this->input->post('phone3'),
+			);
+
+			//update the password if it was posted
+			if ($this->input->post('password'))
+			{
+				$this->form_validation->set_rules('password', 'Password', 'required|min_length[' . $this->config->item('min_password_length', 'ion_auth') . ']|max_length[' . $this->config->item('max_password_length', 'ion_auth') . ']|matches[password_confirm]');
+				$this->form_validation->set_rules('password_confirm', 'Password Confirmation', 'required');
+
+				$data['password'] = $this->input->post('password');
+			}
+
+			if ($this->form_validation->run() === TRUE)
+			{ 
+				$this->ion_auth->update($user->id, $data);
+
+				//check to see if we are creating the user
+				//redirect them back to the admin page
+				$this->session->set_flashdata('message', "User Saved");
+				redirect("auth", 'refresh');
+			}
 		}
+		
+		//display the edit user form
+		$data['csrf'] = $this->_get_csrf_nonce();
+
+		//set the flash data error message if there is one
+		$data['message'] = (validation_errors() ? validation_errors() : ($this->ion_auth->errors() ? $this->ion_auth->errors() : $this->session->flashdata('message')));
+
+		//pass the user to the view
+		$data['user'] = $user;
+
+		$data['first_name'] = array(
+			'name'  => 'first_name',
+			'id'    => 'first_name',
+			'type'  => 'text',
+			'value' => $this->form_validation->set_value('first_name', $user->first_name),
+		);
+		$data['last_name'] = array(
+			'name'  => 'last_name',
+			'id'    => 'last_name',
+			'type'  => 'text',
+			'value' => $this->form_validation->set_value('last_name', $user->last_name),
+		);
+		$data['company'] = array(
+			'name'  => 'company',
+			'id'    => 'company',
+			'type'  => 'text',
+			'value' => $this->form_validation->set_value('company', $user->company),
+		);
+		$data['phone1'] = array(
+			'name'  => 'phone1',
+			'id'    => 'phone1',
+			'type'  => 'text',
+			'value' => $this->form_validation->set_value('phone1', $user->phone[0]),
+		);
+		$data['phone2'] = array(
+			'name'  => 'phone2',
+			'id'    => 'phone2',
+			'type'  => 'text',
+			'value' => $this->form_validation->set_value('phone2', $user->phone[1]),
+		);
+		$data['phone3'] = array(
+			'name'  => 'phone3',
+			'id'    => 'phone3',
+			'type'  => 'text',
+			'value' => $this->form_validation->set_value('phone3', $user->phone[2]),
+		);
+		$data['password'] = array(
+			'name' => 'password',
+			'id'   => 'password',
+			'type' => 'password'
+		);
+		$data['password_confirm'] = array(
+			'name' => 'password_confirm',
+			'id'   => 'password_confirm',
+			'type' => 'password'
+		);
+
+		$this->load->view('auth/edit_user', $data);
 	}
 
-	/**
-	 * Show info message
-	 *
-	 * @param	string
-	 * @return	void
-	 */
-	function _show_message($message)
+	function _get_csrf_nonce()
 	{
-		$this->session->set_flashdata('message', $message);
-		redirect('/auth/');
+		$this->load->helper('string');
+		$key   = random_string('alnum', 8);
+		$value = random_string('alnum', 20);
+		$this->session->set_flashdata('csrfkey', $key);
+		$this->session->set_flashdata('csrfvalue', $value);
+
+		return array($key => $value);
 	}
 
-	/**
-	 * Send email message of given type (activate, forgot_password, etc.)
-	 *
-	 * @param	string
-	 * @param	string
-	 * @param	array
-	 * @return	void
-	 */
-	function _send_email($type, $email, &$data)
+	function _valid_csrf_nonce()
 	{
-		$this->load->library('email');
-		$this->email->from($this->config->item('webmaster_email', 'tank_auth'), $this->config->item('website_name', 'tank_auth'));
-		$this->email->reply_to($this->config->item('webmaster_email', 'tank_auth'), $this->config->item('website_name', 'tank_auth'));
-		$this->email->to($email);
-		$this->email->subject(sprintf($this->lang->line('auth_subject_'.$type), $this->config->item('website_name', 'tank_auth')));
-		$this->email->message($this->load->view('email/'.$type.'-html', $data, TRUE));
-		$this->email->set_alt_message($this->load->view('email/'.$type.'-txt', $data, TRUE));
-		$this->email->send();
-	}
-
-	/**
-	 * Create CAPTCHA image to verify user as a human
-	 *
-	 * @return	string
-	 */
-	function _create_captcha()
-	{
-		$this->load->helper('captcha');
-
-		$cap = create_captcha(array(
-			'img_path'		=> './'.$this->config->item('captcha_path', 'tank_auth'),
-			'img_url'		=> base_url().$this->config->item('captcha_path', 'tank_auth'),
-			'font_path'		=> './'.$this->config->item('captcha_fonts_path', 'tank_auth'),
-			'font_size'		=> $this->config->item('captcha_font_size', 'tank_auth'),
-			'img_width'		=> $this->config->item('captcha_width', 'tank_auth'),
-			'img_height'	=> $this->config->item('captcha_height', 'tank_auth'),
-			'show_grid'		=> $this->config->item('captcha_grid', 'tank_auth'),
-			'expiration'	=> $this->config->item('captcha_expire', 'tank_auth'),
-		));
-
-		// Save captcha params in session
-		$this->session->set_flashdata(array(
-				'captcha_word' => $cap['word'],
-				'captcha_time' => $cap['time'],
-		));
-
-		return $cap['image'];
-	}
-
-	/**
-	 * Callback function. Check if CAPTCHA test is passed.
-	 *
-	 * @param	string
-	 * @return	bool
-	 */
-	function _check_captcha($code)
-	{
-		$time = $this->session->flashdata('captcha_time');
-		$word = $this->session->flashdata('captcha_word');
-
-		list($usec, $sec) = explode(" ", microtime());
-		$now = ((float)$usec + (float)$sec);
-
-		if ($now - $time > $this->config->item('captcha_expire', 'tank_auth')) {
-			$this->form_validation->set_message('_check_captcha', $this->lang->line('auth_captcha_expired'));
-			return FALSE;
-
-		} elseif (($this->config->item('captcha_case_sensitive', 'tank_auth') AND
-				$code != $word) OR
-				strtolower($code) != strtolower($word)) {
-			$this->form_validation->set_message('_check_captcha', $this->lang->line('auth_incorrect_captcha'));
-			return FALSE;
+		if ($this->input->post($this->session->flashdata('csrfkey')) !== FALSE &&
+			$this->input->post($this->session->flashdata('csrfkey')) == $this->session->flashdata('csrfvalue'))
+		{
+			return TRUE;
 		}
-		return TRUE;
-	}
-
-	/**
-	 * Create reCAPTCHA JS and non-JS HTML to verify user as a human
-	 *
-	 * @return	string
-	 */
-	function _create_recaptcha()
-	{
-		$this->load->helper('recaptcha');
-
-		// Add custom theme so we can get only image
-		$options = "<script>var RecaptchaOptions = {theme: 'custom', custom_theme_widget: 'recaptcha_widget'};</script>\n";
-
-		// Get reCAPTCHA JS and non-JS HTML
-		$html = recaptcha_get_html($this->config->item('recaptcha_public_key', 'tank_auth'),NULL,$this->config->item('enable_ssl_recaptcha', 'tank_auth'));
-
-		return $options.$html;
-	}
-
-	/**
-	 * Callback function. Check if reCAPTCHA test is passed.
-	 *
-	 * @return	bool
-	 */
-	function _check_recaptcha()
-	{
-		$this->load->helper('recaptcha');
-
-		$resp = recaptcha_check_answer($this->config->item('recaptcha_private_key', 'tank_auth'),
-				$_SERVER['REMOTE_ADDR'],
-				$_POST['recaptcha_challenge_field'],
-				$_POST['recaptcha_response_field']);
-
-		if (!$resp->is_valid) {
-			$this->form_validation->set_message('_check_recaptcha', $this->lang->line('auth_incorrect_captcha'));
+		else
+		{
 			return FALSE;
 		}
-		return TRUE;
 	}
 
 }
-
-/* End of file auth.php */
-/* Location: ./application/controllers/auth.php */

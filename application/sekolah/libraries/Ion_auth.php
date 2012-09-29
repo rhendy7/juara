@@ -478,7 +478,12 @@ class Ion_auth
 	
 	
 	}
+	function get_user_group()
+	{
 	
+		return $this->ion_auth_model->get_user_group();
+	
+	}
 	
 	
 

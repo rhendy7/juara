@@ -868,7 +868,7 @@ class Ion_auth_model extends CI_Model
 				    'identity'             => $user->{$this->identity_column},
 				    'username'             => $user->username,
 				    'email'                => $user->email,
-				    'user_id'              => $user->id, //everyone likes to overwrite id so we'll use user_id
+				    'UserId'              => $user->id, //everyone likes to overwrite id so we'll use user_id
 				    'old_last_login'       => $user->last_login
 				);
 
@@ -1189,7 +1189,7 @@ class Ion_auth_model extends CI_Model
 		$this->trigger_events('user');
 
 		//if no id was passed use the current users id
-		$id || $id = $this->session->userdata('user_id');
+		$id || $id = $this->session->userdata('UserId');
 
 		$this->limit(1);
 		$this->where($this->tables['users'].'.id', $id);
@@ -1210,7 +1210,7 @@ class Ion_auth_model extends CI_Model
 		$this->trigger_events('get_users_group');
 
 		//if no id was passed use the current users id
-		$id || $id = $this->session->userdata('user_id');
+		$id || $id = $this->session->userdata('UserId');
 
 		return $this->db->select($this->tables['users_groups'].'.'.$this->join['groups'].' as id, '.$this->tables['groups'].'.name, '.$this->tables['groups'].'.description')
 		                ->where($this->tables['users_groups'].'.'.$this->join['users'], $id)
@@ -1229,7 +1229,7 @@ class Ion_auth_model extends CI_Model
 		$this->trigger_events('add_to_group');
 
 		//if no id was passed use the current users id
-		$user_id || $user_id = $this->session->userdata('user_id');
+		$user_id || $user_id = $this->session->userdata('UserId');
 
 		return $this->db->insert($this->tables['users_groups'], array( $this->join['groups'] => (int)$group_id, $this->join['users'] => (int)$user_id));
 	}
@@ -1780,6 +1780,22 @@ class Ion_auth_model extends CI_Model
 		}
 	}
 	
+	
+	
+	function get_user_group($id=FALSE)
+	{
+		//if no id was passed use the current users id
+		$id || $id = $this->session->userdata('UserId');
+		
+		$sql = "SELECT * 
+FROM `auth_users_groups` ug, auth_groups ag
+WHERE ug.user_id = $id
+AND ug.group_id = ag.id";
+
+		return $this->db->query($sql)->row();
+		
+	
+	}
 	
 	//##modification 6 sept 2012
 	

@@ -14,8 +14,10 @@
    
 /* default styles
    -------------- */
+ .error_validation {width: 80%; background: #fcc88f; padding: 10px; font-weight: bold; color: red;}
+ 
    
-.error_msg, .notice, .success {padding:.8em;margin-bottom:1.6em;border:2px solid #ddd;}
+.error_msg, .notice, .success {padding:.8em;margin-bottom:1.6em; padding-bottom: 10px;border:2px solid #ddd;}
 .error_msg {background: url(../images/cross.png) #FAC8DC 10px  no-repeat;color:#8a1f11;border-color:#FBC2C4; padding-left: 50px; padding-top: 20px;}
 .error_msg a {color:#8a1f11; background:none; padding:0; margin:0; }
 .error_msg p { font-size: 15px; }
@@ -28,6 +30,7 @@ fieldset {
 	padding:1em 0.5em 2em 5px;
 	margin-bottom: 20px;
 	margin-top: 20px;
+	width: 90%;
 	
 	
 	
@@ -282,7 +285,7 @@ textarea:focus, input[type='text']:focus, input[type='password']:focus, select:f
 	margin: 0px;
 	height: 20px;
 	padding: 10px 0 0 10px;
-	color: red;
+	color: #413f3f;
 	
 	}
 
@@ -304,7 +307,7 @@ textarea:focus, input[type='text']:focus, input[type='password']:focus, select:f
 	height: 19px;
 	width: 280px;
 	/* border: 1px solid #C4C4C4; */
-	border: 1px solid brown;
+	border: 1px solid #ada9a9;
 	 border-radius:5px;
  -moz-border-radius:5px; /* Firefox 3.6 and earlier */
 	font-size: 15px;
@@ -410,7 +413,7 @@ width: 150px;
 	
 	
 	float: left;
-	margin: 20px 0px 0px 0px;
+	margin: 0px 0px 0px 0px;
 	height: auto;
 	padding: 0px 20% 0 40%;	
 	

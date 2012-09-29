@@ -1,21 +1,5 @@
 <?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 /**
-* Name:  Ion Auth Model
-*
-* Author:  Ben Edmunds
-* 		   ben.edmunds@gmail.com
-*	  	   @benedmunds
-*
-* Added Awesomeness: Phil Sturgeon
-*
-* Location: http://github.com/benedmunds/CodeIgniter-Ion-Auth
-*
-* Created:  10.01.2009
-*
-* Description:  Modified auth system based on redux_auth with extensive customization.  This is basically what Redux Auth 2 should be.
-* Original Author name has been kept but that does not mean that the method has not been modified.
-*
-* Requirements: PHP5 or above
 *
 */
 
@@ -38,6 +22,7 @@ public $user;
 		parent::__construct();
 		$this->load->database();
 		
+		$this->load->library('ion_auth');
 		$this->user = $this->ion_auth->user()->row();
 
 		
@@ -59,6 +44,74 @@ public $user;
 		
 	}
 
+	
+	
+	function get_pengguna_by_email($email)
+	{	
+		$sql = "SELECT * FROM pengguna WHERE email = '$email' LIMIT 1";
+		$query = $this->db->query($sql);
+		if($query->num_rows() > 0)
+		{
+			return $this->db->query($sql)->row();
+			
+		}
+		else {		
+		
+			return FALSE; // cannot find it
+		}
+	
+	
+	
+	
+	}
+	
+	
+	
+	
+	
+	//get user di auth_user dari email
+	function get_auth_user_by_email ($email)
+	{
+	
+		
+		$sql_auth = "SELECT * FROM auth_users WHERE email = '$email' LIMIT 1";
+		$query = $this->db->query($sql_auth);
+		if($query->num_rows() > 0)
+		{
+			return $this->db->query($sql_auth)->row();
+			
+		}
+		else {		
+		
+			return FALSE; // cannot find it
+		}
+		
+	
+	}
+	
+	
+	
+	
+	function simpan_pengguna($form_data)
+	{
+		$this->db->insert('auth_users_pengguna', $form_data);
+				if ($this->db->affected_rows() == '1')
+				{
+					return TRUE;
+				}
+			
+			
+			
+			else 
+			{
+				return FALSE;
+			}
+	
+	
+	
+	
+	}
+	
 	function get_user_by_email($email)
 	{
 		
@@ -126,6 +179,46 @@ public $user;
 	   $n =  $this->get_user($id_user);
 
 	    return $n->username;
+	}
+	
+	
+	
+	
+	
+	
+	
+	function get_pengguna_id_by_user_id($id=FALSE)
+	{
+		//if no id was passed use the current users id
+		$id || $id = $this->session->userdata('UserId');
+		
+		$sql = "SELECT pengguna_id FROM `auth_users_pengguna` WHERE user_id =$id";
+
+		return $this->db->query($sql)->row();
+		
+	
+	}
+	
+	function get_sekolah_by_pengguna_id($pengguna_id)
+	{
+		
+		
+		$sql = "SELECT sekolah_id FROM `pengguna` WHERE pengguna_id = '$pengguna_id'";
+	
+		return $this->db->query($sql)->row();
+	}
+	
+	
+	function get_sekolah_by_sekolah_id($sekolah_id=False)
+	{
+	
+		//if no id was passed use the current users id
+		$sekolah_id || $sekolah_id = $this->session->userdata('SekolahId');
+		$sql = "SELECT * FROM `sekolah` WHERE sekolah_id = '$sekolah_id'";
+	
+		return $this->db->query($sql)->row();
+	
+	
 	}
 	
 	

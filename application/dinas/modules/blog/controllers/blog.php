@@ -85,7 +85,7 @@ class Blog extends MX_Controller {
 											'id_kategori' => $this->input->post('kategori'),
 											'judul' => $this->input->post('judul'),
 											'isi' => $this->input->post('isi'),
-											'id_user' => $this->session->userdata('user_id'),
+											'id_user' => $this->session->userdata('UserId'),
 											'id_unit_kerja' => $this->tank_auth->get_id_unit_kerja(),
 																		
 											);		

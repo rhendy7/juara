@@ -100,26 +100,11 @@ class Auth extends MX_Controller {
 				else 
 				{
 					 $this->session->set_userdata('email', $pengguna->email);
-
+					
+					//go to login pertama pengelola
 					 modules::run('redirection'); 
 					
-					// $data['sekolah'] = $this->M_user->get_sekolah_by_id($pengguna->sekolah_id);
-					// $data['pengguna'] = $this->M_user->get_user_by_email($this->input->post('identity'));
 					
-					// $data['message'] = "Silahkan periksa sekolah anda";
-					
-					// $this->template->load($this->_template.'login', 'content/V_login_pertama',$data);$this->template->set('title', 'Buat Akun');
-					
-					
-					/* if ($this->ion_auth->register($username, $password, $email, $additional_data))
-					{ 
-						//check to see if we are creating the user
-						//redirect them back to the admin page
-						$this->session->set_flashdata('message', $this->ion_auth->messages());
-						// redirect("auth", 'refresh');
-						echo "oke create";
-						
-					} */
 				}
 				//then form masukkan kordinat dilengkapi dengan nama profil sekolah.
 			
@@ -137,7 +122,11 @@ class Auth extends MX_Controller {
 						//if the login is successful
 						//redirect them back to the home page
 						$this->session->set_flashdata('message', $this->ion_auth->messages());
-						redirect('admin', 'refresh');
+						
+						modules::run('redirection/cek_group'); 
+						
+						
+						// redirect('admin', 'refresh');
 					}
 					else
 					{ 

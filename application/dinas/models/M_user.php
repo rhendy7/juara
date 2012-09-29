@@ -45,6 +45,10 @@ public $user;
 	}
 	
 	
+	
+	
+	
+	
 	function get_user($id_user=FALSE)
 	{
 		if($id_user == FALSE){
@@ -116,6 +120,30 @@ public $user;
 		}
 		
 		
+	}
+	
+	
+	
+	
+	function get_pengguna_id_by_user_id($id=FALSE)
+	{
+		//if no id was passed use the current users id
+		$id || $id = $this->session->userdata('UserId');
+		
+		$sql = "SELECT pengguna_id FROM `auth_users_pengguna` WHERE user_id =$id";
+
+		return $this->db->query($sql)->row();
+		
+	
+	}
+	
+	function get_sekolah_by_pengguna_id($pengguna_id)
+	{
+		
+		
+		$sql = "SELECT sekolah_id FROM `pengguna` WHERE pengguna_id = '$pengguna_id'";
+	
+		return $this->db->query($sql)->row();
 	}
 	
 	
